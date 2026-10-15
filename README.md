@@ -76,6 +76,9 @@ Data SQLite disimpan dalam named volume Docker `siberwaspada_data` sehingga teta
 - `GET /api/trends?days=7` — tren harian kejadian (1–30 hari).
 - `GET /api/audit?limit=100` — jejak audit terbaru.
 - `POST /api/import/jsonl` — impor JSON Lines melalui badan teks.
+- `GET /api/trends?days=7` — tren harian kejadian (1–30 hari).
+- `GET /api/audit?limit=100` — jejak audit terbaru.
+- `POST /api/import/jsonl` — impor JSON Lines melalui badan teks.
 - `GET /api/reports/summary` — ringkasan status/severitas insiden dan langkah tindak lanjut.
 - `GET /api/export/incidents.csv` — unduh laporan insiden.
 - `POST /api/simulator/run` — membuat event demo lokal.
