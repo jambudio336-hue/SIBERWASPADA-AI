@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: ./backend
+    environment:
+      SIBERWASPADA_DB: /app/data/siberwaspada.sqlite3
+    ports:
+      - "8000:8000"
+    volumes:
+      - siberwaspada_data:/app/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  siberwaspada_data:
