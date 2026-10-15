@@ -37,7 +37,7 @@ async function createWindow() {
   const env = {
     ...process.env,
     SIBERWASPADA_DB: path.join(dataDir, "siberwaspada.sqlite3"),
-    SIBERWASPADA_WEB_DIR: path.join(process.resourcesPath, "app", "web"),
+    SIBERWASPADA_WEB_DIR: path.join(process.resourcesPath, "web"),
     SIBERWASPADA_PORT: port
   };
   apiProcess = spawn(executable, [], { env, stdio: "ignore", windowsHide: true });
