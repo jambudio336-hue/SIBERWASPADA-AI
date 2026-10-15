@@ -10,7 +10,9 @@ Platform edukasi dan pemantauan keamanan siber dengan mesin deteksi berbasis atu
 - Penyimpanan SQLite lokal untuk event dan insiden.
 - Deteksi aturan: percobaan login berulang, lonjakan request, dan pola akses mencurigakan.
 - Simulator skenario defensif yang tidak mengirim trafik ke target eksternal.
-- Filter event, perubahan status insiden, dan ekspor CSV.
+- Filter event berdasarkan tingkat keparahan dan pencarian teks/IP/event.
+- Perubahan status insiden, ekspor CSV event maupun insiden.
+- Endpoint laporan ringkas dan katalog aturan deteksi yang dapat dijelaskan.
 - Pengujian backend dan GitHub Actions CI.
 - Tidak memerlukan API key berbayar untuk fitur inti.
 
@@ -68,6 +70,9 @@ Data SQLite disimpan dalam named volume Docker `siberwaspada_data` sehingga teta
 - `GET /api/metrics`
 - `GET /api/events?limit=100&severity=high`
 - `GET /api/alerts`
+- `GET /api/rules` — katalog aturan deteksi aktif.
+- `GET /api/reports/summary` — ringkasan status/severitas insiden dan langkah tindak lanjut.
+- `GET /api/export/incidents.csv` — unduh laporan insiden.
 - `POST /api/simulator/run` — membuat event demo lokal.
 - `PATCH /api/incidents/{id}` — ubah status insiden.
 - `GET /api/export/events.csv`
