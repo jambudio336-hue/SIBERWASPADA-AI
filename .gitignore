@@ -12,3 +12,8 @@ backend/data/
 *.db
 *.sqlite3
 .DS_Store
+
+# Artefak paket desktop yang dibuat oleh CI
+desktop/web/
+desktop/resources/backend/
+desktop/release/
