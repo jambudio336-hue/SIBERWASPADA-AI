@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import AdvancedPanel from "./AdvancedPanel";
 import {
   Activity, AlertOctagon, AlertTriangle, ArrowDownToLine, Bell, CheckCircle2,
   CircleHelp, Clock3, Cpu, Database, ExternalLink, FileText, Gauge, Globe2,
@@ -28,7 +29,7 @@ const severityLabel: Record<string, string> = {
   critical: "Kritis", high: "Tinggi", medium: "Sedang", low: "Rendah", info: "Info",
 };
 const statusLabel: Record<string, string> = {
-  open: "Terbuka", investigating: "Diselidiki", resolved: "Selesai", false_positive: "False positive",
+  open: "Terbuka", investigating: "Diselidiki", resolved: "Selesai", false_positive: "Positif palsu",
 };
 
 function timeLabel(value: string) {
@@ -103,7 +104,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><div className="brand-mark"><ShieldCheck size={24} /></div><div><b>SIBER<span>WASPADA</span></b><small>AI CYBER DEFENSE</small></div></div>
+        <div className="brand"><div className="brand-mark"><ShieldCheck size={24} /></div><div><b>SIBER<span>WASPADA</span></b><small>PERTAHANAN SIBER AI</small></div></div>
         <div className="workspace-label">RUANG KERJA</div>
         <button className={`nav-item ${tab === "overview" ? "active" : ""}`} onClick={() => setTab("overview")}><Gauge size={18}/> Ikhtisar <span className="nav-dot"/></button>
         <button className={`nav-item ${tab === "incidents" ? "active" : ""}`} onClick={() => setTab("incidents")}><Siren size={18}/> Insiden <span className="nav-count">{openIncidents}</span></button>
@@ -113,7 +114,7 @@ export default function App() {
         <button className="nav-item" onClick={() => window.open(API + "/api/export/events.csv", "_blank", "noopener,noreferrer")}><ArrowDownToLine size={18}/> Ekspor event</button>
         <button className="nav-item" onClick={() => window.open(API + "/api/export/incidents.csv", "_blank", "noopener,noreferrer")}><FileText size={18}/> Ekspor insiden</button>
         <button className="nav-item" onClick={() => window.open(API + "/api/reports/summary", "_blank", "noopener,noreferrer")}><Activity size={18}/> Laporan ringkas <ExternalLink size={13} className="nav-end"/></button>
-        <div className="sidebar-bottom"><div className="mini-shield"><Shield size={18}/></div><b>Defensive by design</b><p>Analisis, deteksi, dan respons yang bertanggung jawab.</p><div className="version">SIBERWASPADA · MVP 0.1.0</div></div>
+        <div className="sidebar-bottom"><div className="mini-shield"><Shield size={18}/></div><b>Dirancang untuk pertahanan</b><p>Analisis, deteksi, dan respons yang bertanggung jawab.</p><div className="version">SIBERWASPADA · MVP 0.1.0</div></div>
       </aside>
 
       <main className="main-content">
@@ -124,7 +125,7 @@ export default function App() {
 
         <section className="page-heading">
           <div><div className="eyebrow"><span className="eyebrow-line"/> PERTAHANAN SIBER INDONESIA</div><h1>{tab === "overview" ? "Pusat Operasi Keamanan" : "Manajemen Insiden"}</h1><p className="subheading">Pantau sinyal keamanan, pahami konteks, dan tindak lanjuti dengan terukur.</p></div>
-          <div className="heading-actions"><span className="demo-pill"><span/> MODE DEMO / LOKAL</span><button className="primary-button" onClick={() => void runSimulator()} disabled={busy || !apiOnline}>{busy ? <LoaderCircle size={17} className="spin"/> : <Play size={16}/>} Jalankan simulasi</button></div>
+          <div className="heading-actions"><span className="demo-pill"><span/> MODE LOKAL / DEMO</span><button className="primary-button" onClick={() => void runSimulator()} disabled={busy || !apiOnline}>{busy ? <LoaderCircle size={17} className="spin"/> : <Play size={16}/>} Jalankan simulasi</button></div>
         </section>
 
         {error && <div className="notice error"><AlertTriangle size={18}/><div><b>Koneksi / permintaan bermasalah</b><p>{error}. Pastikan backend berjalan di {API}.</p></div></div>}
@@ -135,7 +136,7 @@ export default function App() {
           <div className="stats-grid">
             <StatCard icon={<Activity size={18}/>} label="Total event tercatat" value={metrics?.total_events ?? "—"} detail="Event tersimpan di database lokal" tone="blue"/>
             <StatCard icon={<AlertOctagon size={18}/>} label="Insiden terbuka" value={metrics?.open_incidents ?? "—"} detail="Menunggu tinjauan operator" tone="red"/>
-            <StatCard icon={<AlertTriangle size={18}/>} label="Event prioritas tinggi" value={(metrics?.by_severity?.high ?? 0) + (metrics?.by_severity?.critical ?? 0)} detail="High + critical" tone="amber"/>
+            <StatCard icon={<AlertTriangle size={18}/>} label="Event prioritas tinggi" value={(metrics?.by_severity?.high ?? 0) + (metrics?.by_severity?.critical ?? 0)} detail="Tinggi + kritis" tone="amber"/>
             <StatCard icon={<Database size={18}/>} label="Event simulasi" value={metrics?.simulated_events ?? "—"} detail="Data sintetis untuk demo" tone="purple"/>
           </div>
 
@@ -181,6 +182,7 @@ export default function App() {
           </tbody></table></div>
         </section>}
 
+        <AdvancedPanel api={API} />
         <footer className="footer"><div><ShieldCheck size={15}/> <span>SIBERWASPADA AI</span> · Dibuat untuk pertahanan, transparansi, dan pembelajaran.</div><span>Data demo ≠ pemantauan produksi</span></footer>
       </main>
     </div>
