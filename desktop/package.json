@@ -1,0 +1,29 @@
+{
+  "name": "siberwaspada-ai-desktop",
+  "version": "0.2.0",
+  "description": "SIBERWASPADA AI - Platform pertahanan keamanan siber",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "dist": "electron-builder",
+    "dist:windows": "electron-builder --win nsis",
+    "dist:macos": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage deb"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "id.m4zk1pl4y.siberwaspada",
+    "productName": "SIBERWASPADA AI",
+    "directories": { "output": "release" },
+    "files": ["main.cjs", "package.json", "web/**/*", "resources/backend/**/*"],
+    "asar": true,
+    "extraMetadata": { "main": "main.cjs" },
+    "win": { "target": ["nsis"], "artifactName": "SIBERWASPADA-AI-${version}-Setup.${ext}" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true },
+    "mac": { "target": ["dmg"], "artifactName": "SIBERWASPADA-AI-${version}-macOS.${ext}" },
+    "linux": { "target": ["AppImage", "deb"], "category": "Utility", "artifactName": "SIBERWASPADA-AI-${version}-Linux.${ext}" }
+  }
+}
