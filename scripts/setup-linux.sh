@@ -11,4 +11,10 @@ else
   echo "Paket manajer tidak dikenali. Pasang Python 3.11+ dan Node.js 20+ secara manual."
   exit 1
 fi
-"$(dirname "$0")/run.sh"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+python3 -m venv backend/.venv
+backend/.venv/bin/python -m pip install --upgrade pip
+backend/.venv/bin/pip install -r backend/requirements.txt
+(cd frontend && npm install)
+echo "Instalasi selesai. Jalankan aplikasi dengan: bash scripts/run.sh"
