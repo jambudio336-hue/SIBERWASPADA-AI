@@ -41,6 +41,7 @@ export default function App() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [severityFilter, setSeverityFilter] = useState("all");
+  const [eventSearch, setEventSearch] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -95,7 +96,8 @@ export default function App() {
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal mengubah status."); }
   };
 
-  const filteredEvents = events.filter(e => severityFilter === "all" || e.severity === severityFilter);
+  const normalizedSearch = eventSearch.trim().toLowerCase();
+  const filteredEvents = events.filter(e => (severityFilter === "all" || e.severity === severityFilter) && (!normalizedSearch || [e.message, e.source_ip, e.event_type, e.details].some(value => String(value || "").toLowerCase().includes(normalizedSearch))));
   const openIncidents = incidents.filter(i => i.status === "open" || i.status === "investigating").length;
 
   return (
@@ -109,6 +111,8 @@ export default function App() {
         <button className="nav-item" onClick={() => setNotice("Sumber data nyata belum dikonfigurasi. Dashboard saat ini menggunakan event lokal/demo.")}><Wifi size={18}/> Sumber data</button>
         <button className="nav-item" onClick={() => window.open(API + "/docs", "_blank", "noopener,noreferrer")}><Layers3 size={18}/> Dokumentasi API <ExternalLink size={13} className="nav-end"/></button>
         <button className="nav-item" onClick={() => window.open(API + "/api/export/events.csv", "_blank", "noopener,noreferrer")}><ArrowDownToLine size={18}/> Ekspor event</button>
+        <button className="nav-item" onClick={() => window.open(API + "/api/export/incidents.csv", "_blank", "noopener,noreferrer")}><FileText size={18}/> Ekspor insiden</button>
+        <button className="nav-item" onClick={() => window.open(API + "/api/reports/summary", "_blank", "noopener,noreferrer")}><Activity size={18}/> Laporan ringkas <ExternalLink size={13} className="nav-end"/></button>
         <div className="sidebar-bottom"><div className="mini-shield"><Shield size={18}/></div><b>Defensive by design</b><p>Analisis, deteksi, dan respons yang bertanggung jawab.</p><div className="version">SIBERWASPADA · MVP 0.1.0</div></div>
       </aside>
 
@@ -138,7 +142,7 @@ export default function App() {
           <div className="content-grid">
             <section className="panel event-panel">
               <div className="panel-heading"><div><h2><Activity size={18}/> Aliran event keamanan</h2><p>Event terbaru dari API lokal</p></div><button className="text-button" onClick={() => void refresh()}>Segarkan <RefreshCw size={14}/></button></div>
-              <div className="filter-row"><span>{filteredEvents.length} event ditampilkan</span><select value={severityFilter} onChange={e => setSeverityFilter(e.target.value)} aria-label="Filter tingkat keparahan"><option value="all">Semua tingkat</option><option value="critical">Kritis</option><option value="high">Tinggi</option><option value="medium">Sedang</option><option value="low">Rendah</option><option value="info">Info</option></select></div>
+              <div className="filter-row"><span>{filteredEvents.length} event ditampilkan</span><input className="event-search" type="search" value={eventSearch} onChange={e => setEventSearch(e.target.value)} placeholder="Cari IP, event, pesan..." aria-label="Cari event" /><select value={severityFilter} onChange={e => setSeverityFilter(e.target.value)} aria-label="Filter tingkat keparahan"><option value="all">Semua tingkat</option><option value="critical">Kritis</option><option value="high">Tinggi</option><option value="medium">Sedang</option><option value="low">Rendah</option><option value="info">Info</option></select></div>
               <div className="table-wrap"><table><thead><tr><th>EVENT</th><th>SUMBER</th><th>SEVERITAS</th><th>WAKTU</th></tr></thead><tbody>
                 {filteredEvents.map(event => <tr key={event.id}><td><div className="event-name">{event.message}</div><div className="event-meta">#{event.id} · {event.event_type}{event.is_simulated ? <span className="sim-tag">SIM</span> : null}</div></td><td className="mono">{event.source_ip}</td><td><Severity value={event.severity}/></td><td className="time-cell">{timeLabel(event.timestamp)}</td></tr>)}
                 {!filteredEvents.length && <tr><td colSpan={4} className="empty-state"><Activity size={25}/><b>Belum ada event</b><span>Jalankan simulasi untuk membuat data demonstrasi.</span></td></tr>}
