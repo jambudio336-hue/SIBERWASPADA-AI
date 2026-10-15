@@ -7,7 +7,7 @@ import json
 import os
 import random
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Literal, Any
 
 from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +48,25 @@ class IncidentStatusIn(BaseModel):
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _csv_safe_value(value: Any) -> Any:
+    """Prevent spreadsheet formula injection when CSV exports are opened in office apps."""
+    if not isinstance(value, str) or not value:
+        return value
+    stripped = value.lstrip(" \t\r\n")
+    if value.startswith(("\t", "\r", "\n")) or stripped.startswith(("=", "+", "-", "@")):
+        return "'" + value
+    return value
+
+
+def _write_csv(rows: list[dict[str, Any]], fields: list[str]) -> str:
+    buffer = io.StringIO(newline="")
+    writer = csv.DictWriter(buffer, fieldnames=fields, extrasaction="ignore")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({key: _csv_safe_value(value) for key, value in row.items()})
+    return buffer.getvalue()
 
 
 def record_event(payload: EventIn) -> dict:
@@ -140,7 +159,6 @@ def run_simulator() -> dict:
     }
 
 
-
 @app.get("/api/trends")
 def get_trends(days: int = Query(default=7, ge=1, le=30)) -> dict:
     """Tren harian kejadian tersimpan; bukan ramalan."""
@@ -201,6 +219,7 @@ def get_detection_rules() -> list[dict[str, str]]:
         {"rule_id": "OPS-004", "name": "Layanan gagal health check", "event_types": "service_down, health_check_failed", "severity": "critical", "enabled": "true"},
     ]
 
+
 @app.get("/api/reports/summary")
 def report_summary() -> dict:
     """Return a transparent summary report from stored events and incidents."""
@@ -227,32 +246,22 @@ def report_summary() -> dict:
         ],
     }
 
+
 @app.get("/api/export/incidents.csv")
 def export_incidents() -> StreamingResponse:
-    """Export recent incidents as a CSV report."""
-    rows = database.list_incidents()
-    buffer = io.StringIO()
+    """Export recent incidents as a CSV report safe to open in spreadsheet software."""
     fields = ["id", "event_id", "created_at", "rule_id", "title", "severity", "status", "source_ip", "event_type", "description", "recommendation", "is_simulated"]
-    writer = csv.DictWriter(buffer, fieldnames=fields, extrasaction="ignore")
-    writer.writeheader()
-    writer.writerows(rows)
-    buffer.seek(0)
-    return StreamingResponse(iter([buffer.getvalue()]), media_type="text/csv; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="siberwaspada-incidents.csv"'})
+    csv_content = _write_csv(database.list_incidents(), fields)
+    return StreamingResponse(iter([csv_content]), media_type="text/csv; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="siberwaspada-incidents.csv"'})
+
 
 @app.get("/api/export/events.csv")
 def export_events() -> StreamingResponse:
-    rows = database.list_events(500)
-    buffer = io.StringIO()
-    writer = csv.DictWriter(
-        buffer,
-        fieldnames=["id", "timestamp", "source_ip", "event_type", "severity", "message", "details", "is_simulated"],
-        extrasaction="ignore",
-    )
-    writer.writeheader()
-    writer.writerows(rows)
-    buffer.seek(0)
+    """Export recent events as a CSV report safe to open in spreadsheet software."""
+    fields = ["id", "timestamp", "source_ip", "event_type", "severity", "message", "details", "is_simulated"]
+    csv_content = _write_csv(database.list_events(500), fields)
     return StreamingResponse(
-        iter([buffer.getvalue()]),
+        iter([csv_content]),
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="siberwaspada-events.csv"'},
     )
