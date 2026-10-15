@@ -4,13 +4,15 @@ from __future__ import annotations
 import csv
 import io
 import json
+import os
 import random
 from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import database
@@ -66,8 +68,12 @@ def startup() -> None:
 
 
 @app.get("/")
-def root() -> dict:
-    return {"name": "SIBERWASPADA AI", "version": "0.1.0", "docs": "/docs", "mode": "defensive MVP"}
+def root():
+    web_dir = os.getenv("SIBERWASPADA_WEB_DIR")
+    index_file = os.path.join(web_dir, "index.html") if web_dir else ""
+    if index_file and os.path.isfile(index_file):
+        return FileResponse(index_file)
+    return {"name": "SIBERWASPADA AI", "version": "0.2.0", "docs": "/docs", "mode": "defensive MVP"}
 
 
 @app.get("/api/health")
@@ -250,3 +256,9 @@ def export_events() -> StreamingResponse:
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="siberwaspada-events.csv"'},
     )
+
+
+# Sajikan antarmuka statis hanya ketika dibundel sebagai aplikasi desktop.
+_web_dir = os.getenv("SIBERWASPADA_WEB_DIR")
+if _web_dir and os.path.isdir(_web_dir):
+    app.mount("/", StaticFiles(directory=_web_dir, html=True), name="frontend")
