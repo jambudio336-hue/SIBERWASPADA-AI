@@ -52,6 +52,17 @@ pip install -r requirements.txt
 pytest -q
 ```
 
+### 4. Jalankan seluruh stack dengan Docker
+Jika Docker dan Docker Compose sudah terpasang:
+```bash
+docker compose up --build
+```
+Frontend: http://localhost:8080  
+Backend: http://localhost:8000  
+API docs: http://localhost:8000/docs
+
+Data SQLite disimpan dalam named volume Docker `siberwaspada_data` sehingga tetap ada saat container dibuat ulang. Untuk menghentikan layanan: `docker compose down` (volume data tidak dihapus). Untuk menghapus data juga: `docker compose down -v`.
+
 ## Endpoint utama
 - `GET /api/health`
 - `GET /api/metrics`
