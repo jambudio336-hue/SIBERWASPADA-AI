@@ -19,24 +19,24 @@ jobs:
           - platform: windows
             os: windows-latest
             target: --win nsis
-            binary: siberwaspada-api.exe
           - platform: macos
             os: macos-latest
             target: --mac dmg
-            binary: siberwaspada-api
           - platform: linux
             os: ubuntu-latest
             target: --linux AppImage deb
-            binary: siberwaspada-api
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - name: Build frontend
         working-directory: frontend
         run: |
@@ -65,7 +65,7 @@ jobs:
         working-directory: desktop
         run: |
           npm install
-          npm run dist -- ${{ matrix.target }}
+          npm run dist -- ${{ matrix.target }} --publish never
       - name: Upload installer artifacts
         uses: actions/upload-artifact@v4
         with:
