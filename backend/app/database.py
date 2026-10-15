@@ -44,6 +44,17 @@ def init_db() -> None:
         )""")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp DESC)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status)")
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            action TEXT NOT NULL,
+            entity_type TEXT NOT NULL,
+            entity_id TEXT NOT NULL DEFAULT '',
+            actor TEXT NOT NULL DEFAULT 'operator-lokal',
+            details TEXT NOT NULL DEFAULT ''
+        )""")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_log(timestamp DESC)")
 
 
 def insert_event(event: dict[str, Any]) -> int:
@@ -117,3 +128,36 @@ def metrics() -> dict[str, Any]:
             "by_severity": by_severity,
             "data_mode": "demo-and-local",
         }
+
+
+def insert_audit(timestamp: str, action: str, entity_type: str, entity_id: str = "", details: str = "", actor: str = "operator-lokal") -> int:
+    """Append an audit record; never store secrets or raw uploaded file contents."""
+    with connect() as conn:
+        cur = conn.execute(
+            "INSERT INTO audit_log(timestamp,action,entity_type,entity_id,actor,details) VALUES(?,?,?,?,?,?)",
+            (timestamp, action[:80], entity_type[:80], str(entity_id)[:120], actor[:120], details[:500]),
+        )
+        return int(cur.lastrowid)
+
+
+def list_audit(limit: int = 100) -> list[dict[str, Any]]:
+    limit = max(1, min(int(limit), 500))
+    with connect() as conn:
+        rows = conn.execute("SELECT * FROM audit_log ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+        return [dict(row) for row in rows]
+
+
+def event_trends(days: int = 7) -> list[dict[str, Any]]:
+    days = max(1, min(int(days), 30))
+    with connect() as conn:
+        rows = conn.execute(
+            """SELECT substr(timestamp,1,10) AS date, COUNT(*) AS total,
+                      SUM(CASE WHEN severity='critical' THEN 1 ELSE 0 END) AS critical,
+                      SUM(CASE WHEN severity='high' THEN 1 ELSE 0 END) AS high,
+                      SUM(CASE WHEN is_simulated=1 THEN 1 ELSE 0 END) AS simulated
+               FROM events
+               WHERE timestamp >= datetime('now', ?)
+               GROUP BY substr(timestamp,1,10) ORDER BY date ASC""",
+            (f"-{days - 1} days",),
+        ).fetchall()
+        return [dict(row) for row in rows]
