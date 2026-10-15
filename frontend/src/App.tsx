@@ -83,7 +83,7 @@ export default function App() {
     setBusy(true); setNotice(""); setError("");
     try {
       const result = await request("/api/simulator/run", { method: "POST" }).then(r => r.json());
-      setNotice(`Simulasi selesai: ${result.created} event demo dibuat. Tidak ada trafik dikirim ke target eksternal.`);
+      setNotice(`Simulasi selesai: ${result.created} kejadian demo dibuat. Tidak ada trafik dikirim ke target eksternal.`);
       await refresh();
     } catch (e) { setError(e instanceof Error ? e.message : "Simulasi gagal dijalankan."); }
     finally { setBusy(false); }
@@ -111,10 +111,10 @@ export default function App() {
         <div className="workspace-label section-gap">SISTEM</div>
         <button className="nav-item" onClick={() => setNotice("Sumber data nyata belum dikonfigurasi. Dasbor saat ini menggunakan kejadian lokal/demo.")}><Wifi size={18}/> Sumber data</button>
         <button className="nav-item" onClick={() => window.open(API + "/docs", "_blank", "noopener,noreferrer")}><Layers3 size={18}/> Dokumentasi API <ExternalLink size={13} className="nav-end"/></button>
-        <button className="nav-item" onClick={() => window.open(API + "/api/export/events.csv", "_blank", "noopener,noreferrer")}><ArrowDownToLine size={18}/> Ekspor event</button>
+        <button className="nav-item" onClick={() => window.open(API + "/api/export/events.csv", "_blank", "noopener,noreferrer")}><ArrowDownToLine size={18}/> Ekspor kejadian</button>
         <button className="nav-item" onClick={() => window.open(API + "/api/export/incidents.csv", "_blank", "noopener,noreferrer")}><FileText size={18}/> Ekspor insiden</button>
         <button className="nav-item" onClick={() => window.open(API + "/api/reports/summary", "_blank", "noopener,noreferrer")}><Activity size={18}/> Laporan ringkas <ExternalLink size={13} className="nav-end"/></button>
-        <div className="sidebar-bottom"><div className="mini-shield"><Shield size={18}/></div><b>Dirancang untuk pertahanan</b><p>Analisis, deteksi, dan respons yang bertanggung jawab.</p><div className="version">SIBERWASPADA · MVP 0.1.0</div></div>
+        <div className="sidebar-bottom"><div className="mini-shield"><Shield size={18}/></div><b>Dirancang untuk pertahanan</b><p>Analisis, deteksi, dan respons yang bertanggung jawab.</p><div className="version">SIBERWASPADA · Versi 0.2.0</div></div>
       </aside>
 
       <main className="main-content">
@@ -130,7 +130,7 @@ export default function App() {
 
         {error && <div className="notice error"><AlertTriangle size={18}/><div><b>Koneksi / permintaan bermasalah</b><p>{error}. Pastikan backend berjalan di {API}.</p></div></div>}
         {notice && <div className="notice success"><CheckCircle2 size={18}/><p>{notice}</p><button onClick={() => setNotice("")} aria-label="Tutup">×</button></div>}
-        <div className="data-banner"><CircleHelp size={17}/><div><b>Kejujuran data</b><span>Event demo ditandai sebagai simulasi. Belum ada konektor jaringan produksi yang aktif.</span></div></div>
+        <div className="data-banner"><CircleHelp size={17}/><div><b>Kejujuran data</b><span>Kejadian demo ditandai sebagai simulasi. Belum ada konektor jaringan produksi yang aktif.</span></div></div>
 
         {tab === "overview" ? <>
           <div className="stats-grid">
@@ -142,11 +142,11 @@ export default function App() {
 
           <div className="content-grid">
             <section className="panel event-panel">
-              <div className="panel-heading"><div><h2><Activity size={18}/> Aliran event keamanan</h2><p>Event terbaru dari API lokal</p></div><button className="text-button" onClick={() => void refresh()}>Segarkan <RefreshCw size={14}/></button></div>
-              <div className="filter-row"><span>{filteredEvents.length} event ditampilkan</span><input className="event-search" type="search" value={eventSearch} onChange={e => setEventSearch(e.target.value)} placeholder="Cari alamat IP, jenis, pesan..." aria-label="Cari event" /><select value={severityFilter} onChange={e => setSeverityFilter(e.target.value)} aria-label="Filter tingkat keparahan"><option value="all">Semua tingkat</option><option value="critical">Kritis</option><option value="high">Tinggi</option><option value="medium">Sedang</option><option value="low">Rendah</option><option value="info">Info</option></select></div>
-              <div className="table-wrap"><table><thead><tr><th>EVENT</th><th>SUMBER</th><th>SEVERITAS</th><th>WAKTU</th></tr></thead><tbody>
+              <div className="panel-heading"><div><h2><Activity size={18}/> Aliran kejadian keamanan</h2><p>Kejadian terbaru dari layanan lokal</p></div><button className="text-button" onClick={() => void refresh()}>Segarkan <RefreshCw size={14}/></button></div>
+              <div className="filter-row"><span>{filteredEvents.length} kejadian ditampilkan</span><input className="event-search" type="search" value={eventSearch} onChange={e => setEventSearch(e.target.value)} placeholder="Cari alamat IP, jenis, pesan..." aria-label="Cari event" /><select value={severityFilter} onChange={e => setSeverityFilter(e.target.value)} aria-label="Filter tingkat keparahan"><option value="all">Semua tingkat</option><option value="critical">Kritis</option><option value="high">Tinggi</option><option value="medium">Sedang</option><option value="low">Rendah</option><option value="info">Info</option></select></div>
+              <div className="table-wrap"><table><thead><tr><th>KEJADIAN</th><th>SUMBER</th><th>SEVERITAS</th><th>WAKTU</th></tr></thead><tbody>
                 {filteredEvents.map(event => <tr key={event.id}><td><div className="event-name">{event.message}</div><div className="event-meta">#{event.id} · {event.event_type}{event.is_simulated ? <span className="sim-tag">SIM</span> : null}</div></td><td className="mono">{event.source_ip}</td><td><Severity value={event.severity}/></td><td className="time-cell">{timeLabel(event.timestamp)}</td></tr>)}
-                {!filteredEvents.length && <tr><td colSpan={4} className="empty-state"><Activity size={25}/><b>Belum ada event</b><span>Jalankan simulasi untuk membuat data demonstrasi.</span></td></tr>}
+                {!filteredEvents.length && <tr><td colSpan={4} className="empty-state"><Activity size={25}/><b>Belum ada kejadian</b><span>Jalankan simulasi untuk membuat data demonstrasi.</span></td></tr>}
               </tbody></table></div>
               <div className="panel-foot"><span><span className="live-dot"/> Sinkronisasi otomatis setiap 12 detik</span><span>{events.length} terbaru · maks. 100</span></div>
             </section>
@@ -162,22 +162,22 @@ export default function App() {
 
           <div className="bottom-grid">
             <section className="panel rule-panel"><div className="panel-heading"><div><h2><Cpu size={18}/> Mesin deteksi</h2><p>Aturan deterministik dan dapat dijelaskan</p></div><span className="status-tag">AKTIF</span></div>
-              <div className="rule-row"><div className="rule-code">AUTH-001</div><div><b>Kegagalan autentikasi</b><span>Menandai event login gagal untuk ditinjau</span></div><Severity value="medium"/></div>
+              <div className="rule-row"><div className="rule-code">AUTH-001</div><div><b>Kegagalan autentikasi</b><span>Menandai kejadian login gagal untuk ditinjau</span></div><Severity value="medium"/></div>
               <div className="rule-row"><div className="rule-code">NET-002</div><div><b>Lonjakan permintaan</b><span>Indikator lonjakan; bukan bukti serangan</span></div><Severity value="high"/></div>
               <div className="rule-row"><div className="rule-code">WEB-003</div><div><b>Pola path mencurigakan</b><span>Indikator traversal pada event web</span></div><Severity value="high"/></div>
               <div className="rule-row"><div className="rule-code">OPS-004</div><div><b>Layanan gagal health check</b><span>Sinyal untuk prosedur pemulihan</span></div><Severity value="critical"/></div>
             </section>
             <section className="panel architecture-panel"><div className="panel-heading"><div><h2><Globe2 size={18}/> Status platform</h2><p>Komponen MVP saat ini</p></div></div>
-              <div className="component-row"><span className="component-icon"><Activity size={16}/></span><div><b>REST API</b><span>FastAPI · /api/*</span></div><span className={`health-dot ${apiOnline ? "good" : "bad"}`}/></div>
+              <div className="component-row"><span className="component-icon"><Activity size={16}/></span><div><b>Layanan API</b><span>FastAPI · /api/*</span></div><span className={`health-dot ${apiOnline ? "good" : "bad"}`}/></div>
               <div className="component-row"><span className="component-icon"><Database size={16}/></span><div><b>Penyimpanan</b><span>SQLite lokal</span></div><span className="health-dot good"/></div>
               <div className="component-row"><span className="component-icon"><ShieldCheck size={16}/></span><div><b>Deteksi aturan</b><span>Empat aturan dasar</span></div><span className="health-dot good"/></div>
-              <div className="component-row"><span className="component-icon"><FileText size={16}/></span><div><b>Ekspor CSV</b><span>Hingga 500 event terbaru</span></div><span className="health-dot good"/></div>
+              <div className="component-row"><span className="component-icon"><FileText size={16}/></span><div><b>Ekspor CSV</b><span>Hingga 500 kejadian terbaru</span></div><span className="health-dot good"/></div>
               <div className="component-row"><span className="component-icon"><Clock3 size={16}/></span><div><b>Refresh dashboard</b><span>Interval 12 detik</span></div><span className="health-dot good"/></div>
             </section>
           </div>
         </> : <section className="panel all-incidents"><div className="panel-heading"><div><h2><Siren size={18}/> Daftar insiden</h2><p>Ubah status setelah operator melakukan tinjauan.</p></div><span className="count-badge">{incidents.length}</span></div>
           <div className="table-wrap"><table><thead><tr><th>INSIDEN</th><th>ATURAN</th><th>SEVERITAS</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody>
-            {incidents.map(item => <tr key={item.id}><td><div className="event-name">{item.title}</div><div className="event-meta">Event #{item.event_id} · {item.source_ip}{item.is_simulated ? " · SIMULASI" : ""}</div><div className="incident-description">{item.description}</div><div className="recommendation"><b>Rekomendasi:</b> {item.recommendation}</div></td><td className="mono">{item.rule_id}</td><td><Severity value={item.severity}/></td><td>{statusLabel[item.status] || item.status}</td><td><select value={item.status} onChange={e => void changeStatus(item.id, e.target.value)} aria-label={`Ubah status insiden ${item.id}`}><option value="open">Terbuka</option><option value="investigating">Diselidiki</option><option value="resolved">Selesai</option><option value="false_positive">False positive</option></select></td></tr>)}
+            {incidents.map(item => <tr key={item.id}><td><div className="event-name">{item.title}</div><div className="event-meta">Kejadian #{item.event_id} · {item.source_ip}{item.is_simulated ? " · SIMULASI" : ""}</div><div className="incident-description">{item.description}</div><div className="recommendation"><b>Rekomendasi:</b> {item.recommendation}</div></td><td className="mono">{item.rule_id}</td><td><Severity value={item.severity}/></td><td>{statusLabel[item.status] || item.status}</td><td><select value={item.status} onChange={e => void changeStatus(item.id, e.target.value)} aria-label={`Ubah status insiden ${item.id}`}><option value="open">Terbuka</option><option value="investigating">Diselidiki</option><option value="resolved">Selesai</option><option value="false_positive">False positive</option></select></td></tr>)}
             {!incidents.length && <tr><td colSpan={5} className="empty-state"><b>Belum ada insiden</b><span>Jalankan simulasi dari halaman ikhtisar.</span></td></tr>}
           </tbody></table></div>
         </section>}
