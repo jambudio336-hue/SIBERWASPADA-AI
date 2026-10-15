@@ -5,7 +5,7 @@ services:
     environment:
       SIBERWASPADA_DB: /app/data/siberwaspada.sqlite3
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - siberwaspada_data:/app/data
     restart: unless-stopped
@@ -16,7 +16,7 @@ services:
       args:
         VITE_API_URL: http://localhost:8000
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
     depends_on:
       - api
     restart: unless-stopped
