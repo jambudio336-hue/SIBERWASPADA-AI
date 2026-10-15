@@ -109,7 +109,7 @@ export default function App() {
         <button className={`nav-item ${tab === "overview" ? "active" : ""}`} onClick={() => setTab("overview")}><Gauge size={18}/> Ikhtisar <span className="nav-dot"/></button>
         <button className={`nav-item ${tab === "incidents" ? "active" : ""}`} onClick={() => setTab("incidents")}><Siren size={18}/> Insiden <span className="nav-count">{openIncidents}</span></button>
         <div className="workspace-label section-gap">SISTEM</div>
-        <button className="nav-item" onClick={() => setNotice("Sumber data nyata belum dikonfigurasi. Dashboard saat ini menggunakan event lokal/demo.")}><Wifi size={18}/> Sumber data</button>
+        <button className="nav-item" onClick={() => setNotice("Sumber data nyata belum dikonfigurasi. Dasbor saat ini menggunakan kejadian lokal/demo.")}><Wifi size={18}/> Sumber data</button>
         <button className="nav-item" onClick={() => window.open(API + "/docs", "_blank", "noopener,noreferrer")}><Layers3 size={18}/> Dokumentasi API <ExternalLink size={13} className="nav-end"/></button>
         <button className="nav-item" onClick={() => window.open(API + "/api/export/events.csv", "_blank", "noopener,noreferrer")}><ArrowDownToLine size={18}/> Ekspor event</button>
         <button className="nav-item" onClick={() => window.open(API + "/api/export/incidents.csv", "_blank", "noopener,noreferrer")}><FileText size={18}/> Ekspor insiden</button>
@@ -120,7 +120,7 @@ export default function App() {
       <main className="main-content">
         <header className="topbar">
           <div className="breadcrumbs">SIBERWASPADA <span>/</span> {tab === "overview" ? "Pusat operasi" : "Manajemen insiden"}</div>
-          <div className="top-actions"><div className={`connection ${apiOnline ? "online" : "offline"}`}><span/> {apiOnline ? "API terhubung" : "API terputus"}</div><button className="icon-button" title="Muat ulang data" onClick={() => void refresh()}><RefreshCw size={17}/></button><div className="avatar">SW</div></div>
+          <div className="top-actions"><div className={`connection ${apiOnline ? "online" : "offline"}`}><span/> {apiOnline ? "Layanan terhubung" : "Layanan terputus"}</div><button className="icon-button" title="Muat ulang data" onClick={() => void refresh()}><RefreshCw size={17}/></button><div className="avatar">SW</div></div>
         </header>
 
         <section className="page-heading">
@@ -134,16 +134,16 @@ export default function App() {
 
         {tab === "overview" ? <>
           <div className="stats-grid">
-            <StatCard icon={<Activity size={18}/>} label="Total event tercatat" value={metrics?.total_events ?? "—"} detail="Event tersimpan di database lokal" tone="blue"/>
+            <StatCard icon={<Activity size={18}/>} label="Total kejadian tercatat" value={metrics?.total_events ?? "—"} detail="Kejadian tersimpan di basis data lokal" tone="blue"/>
             <StatCard icon={<AlertOctagon size={18}/>} label="Insiden terbuka" value={metrics?.open_incidents ?? "—"} detail="Menunggu tinjauan operator" tone="red"/>
-            <StatCard icon={<AlertTriangle size={18}/>} label="Event prioritas tinggi" value={(metrics?.by_severity?.high ?? 0) + (metrics?.by_severity?.critical ?? 0)} detail="Tinggi + kritis" tone="amber"/>
-            <StatCard icon={<Database size={18}/>} label="Event simulasi" value={metrics?.simulated_events ?? "—"} detail="Data sintetis untuk demo" tone="purple"/>
+            <StatCard icon={<AlertTriangle size={18}/>} label="Kejadian prioritas tinggi" value={(metrics?.by_severity?.high ?? 0) + (metrics?.by_severity?.critical ?? 0)} detail="Tinggi + kritis" tone="amber"/>
+            <StatCard icon={<Database size={18}/>} label="Kejadian simulasi" value={metrics?.simulated_events ?? "—"} detail="Data sintetis untuk demonstrasi" tone="purple"/>
           </div>
 
           <div className="content-grid">
             <section className="panel event-panel">
               <div className="panel-heading"><div><h2><Activity size={18}/> Aliran event keamanan</h2><p>Event terbaru dari API lokal</p></div><button className="text-button" onClick={() => void refresh()}>Segarkan <RefreshCw size={14}/></button></div>
-              <div className="filter-row"><span>{filteredEvents.length} event ditampilkan</span><input className="event-search" type="search" value={eventSearch} onChange={e => setEventSearch(e.target.value)} placeholder="Cari IP, event, pesan..." aria-label="Cari event" /><select value={severityFilter} onChange={e => setSeverityFilter(e.target.value)} aria-label="Filter tingkat keparahan"><option value="all">Semua tingkat</option><option value="critical">Kritis</option><option value="high">Tinggi</option><option value="medium">Sedang</option><option value="low">Rendah</option><option value="info">Info</option></select></div>
+              <div className="filter-row"><span>{filteredEvents.length} event ditampilkan</span><input className="event-search" type="search" value={eventSearch} onChange={e => setEventSearch(e.target.value)} placeholder="Cari alamat IP, jenis, pesan..." aria-label="Cari event" /><select value={severityFilter} onChange={e => setSeverityFilter(e.target.value)} aria-label="Filter tingkat keparahan"><option value="all">Semua tingkat</option><option value="critical">Kritis</option><option value="high">Tinggi</option><option value="medium">Sedang</option><option value="low">Rendah</option><option value="info">Info</option></select></div>
               <div className="table-wrap"><table><thead><tr><th>EVENT</th><th>SUMBER</th><th>SEVERITAS</th><th>WAKTU</th></tr></thead><tbody>
                 {filteredEvents.map(event => <tr key={event.id}><td><div className="event-name">{event.message}</div><div className="event-meta">#{event.id} · {event.event_type}{event.is_simulated ? <span className="sim-tag">SIM</span> : null}</div></td><td className="mono">{event.source_ip}</td><td><Severity value={event.severity}/></td><td className="time-cell">{timeLabel(event.timestamp)}</td></tr>)}
                 {!filteredEvents.length && <tr><td colSpan={4} className="empty-state"><Activity size={25}/><b>Belum ada event</b><span>Jalankan simulasi untuk membuat data demonstrasi.</span></td></tr>}
