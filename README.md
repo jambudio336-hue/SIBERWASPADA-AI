@@ -1,0 +1,79 @@
+# SIBERWASPADA AI 🇮🇩
+
+Platform edukasi dan pemantauan keamanan siber dengan mesin deteksi berbasis aturan, dashboard insiden, API FastAPI, database SQLite, dan simulator kejadian aman.
+
+> **Transparansi data:** data yang dibuat tombol **Jalankan simulasi** adalah data demo, bukan telemetri jaringan nyata. Pemantauan produksi memerlukan konektor/sumber log yang sah dan dikonfigurasi secara eksplisit.
+
+## Fitur MVP
+- Dashboard ringkasan event, alert, dan tingkat keparahan.
+- REST API FastAPI + dokumentasi OpenAPI otomatis.
+- Penyimpanan SQLite lokal untuk event dan insiden.
+- Deteksi aturan: percobaan login berulang, lonjakan request, dan pola akses mencurigakan.
+- Simulator skenario defensif yang tidak mengirim trafik ke target eksternal.
+- Filter event, perubahan status insiden, dan ekspor CSV.
+- Pengujian backend dan GitHub Actions CI.
+- Tidak memerlukan API key berbayar untuk fitur inti.
+
+## Arsitektur
+- `frontend/`: React + TypeScript + Vite.
+- `backend/`: Python + FastAPI + SQLite.
+- `backend/data/`: database runtime (tidak dikomit).
+- `.github/workflows/ci.yml`: tes backend dan build frontend.
+
+## Jalankan lokal
+Persyaratan: Python 3.11+ dan Node.js 20+.
+
+### 1. Backend
+```bash
+cd backend
+python -m venv .venv
+# Linux/macOS:
+source .venv/bin/activate
+# Windows PowerShell:
+# .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+API: http://127.0.0.1:8000  
+Dokumentasi API: http://127.0.0.1:8000/docs
+
+### 2. Frontend (terminal kedua)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Buka URL Vite yang ditampilkan. Frontend menggunakan API di `http://127.0.0.1:8000` secara default. Atur `VITE_API_URL` jika API berada di alamat lain.
+
+### 3. Tes backend
+```bash
+cd backend
+pip install -r requirements.txt
+pytest -q
+```
+
+## Endpoint utama
+- `GET /api/health`
+- `GET /api/metrics`
+- `GET /api/events?limit=100&severity=high`
+- `GET /api/alerts`
+- `POST /api/simulator/run` — membuat event demo lokal.
+- `PATCH /api/incidents/{id}` — ubah status insiden.
+- `GET /api/export/events.csv`
+
+## Batasan keamanan MVP
+- Ini adalah MVP untuk demonstrasi dan pengembangan, belum SIEM produksi.
+- Belum ada autentikasi multi-pengguna; jangan mengekspos API langsung ke internet.
+- Jangan memasukkan data pribadi atau log sensitif ke demo publik.
+- Integrasi log nyata harus memiliki otorisasi, validasi input, kontrol akses, retensi, dan audit.
+- AI generatif bersifat opsional dan tidak dibutuhkan mesin deteksi inti.
+
+## Roadmap
+1. Tambah autentikasi/RBAC dan audit trail.
+2. Tambah ingestion log yang diizinkan (mis. file JSONL/syslog) dengan validasi dan rate limit.
+3. Tambah konektor observability dan pengelolaan retensi.
+4. Evaluasi false positive/false negative dengan dataset sintetis.
+5. Deploy dengan HTTPS, secret management, backup, dan monitoring.
+
+## Lisensi
+MIT — lihat `LICENSE`.
