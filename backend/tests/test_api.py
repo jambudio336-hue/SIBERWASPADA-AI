@@ -17,6 +17,7 @@ def setup_function():
     database.init_db()
     with database.connect() as conn:
         conn.execute("DELETE FROM audit_log")
+        conn.execute("DELETE FROM audit_log")
         conn.execute("DELETE FROM incidents")
         conn.execute("DELETE FROM events")
 
