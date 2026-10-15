@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 import random
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -55,6 +56,7 @@ def record_event(payload: EventIn) -> dict:
     alerts = detect_event(event)
     for alert in alerts:
         database.insert_incident(event_id, alert, stamp)
+    database.insert_audit(stamp, "kejadian.dicatat", "kejadian", event_id, f"Jenis={event['event_type']}; simulasi={bool(event.get('is_simulated', False))}")
     return {"id": event_id, **event, "detected_alerts": alerts}
 
 
@@ -101,6 +103,7 @@ def get_alerts(status: str | None = Query(default=None, pattern="^(open|investig
 def patch_incident(incident_id: int, payload: IncidentStatusIn) -> dict:
     if not database.update_incident_status(incident_id, payload.status):
         raise HTTPException(status_code=404, detail="Insiden tidak ditemukan")
+    database.insert_audit(now_iso(), "insiden.status_diubah", "insiden", incident_id, f"Status baru={payload.status}")
     return {"id": incident_id, "status": payload.status, "updated": True}
 
 
@@ -128,6 +131,54 @@ def run_simulator() -> dict:
         "created": len(created),
         "events": created,
         "metrics": database.metrics(),
+    }
+
+
+
+@app.get("/api/trends")
+def get_trends(days: int = Query(default=7, ge=1, le=30)) -> dict:
+    """Tren harian kejadian tersimpan; bukan ramalan."""
+    return {
+        "days": days,
+        "generated_at": now_iso(),
+        "notice": "Tren berdasarkan kejadian tersimpan; data simulasi tetap ditandai sebagai simulasi.",
+        "items": database.event_trends(days),
+    }
+
+
+@app.get("/api/audit")
+def get_audit(limit: int = Query(default=100, ge=1, le=500)) -> list[dict]:
+    """Tampilkan jejak audit tindakan sistem/operator."""
+    return database.list_audit(limit)
+
+
+@app.post("/api/import/jsonl")
+def import_jsonl(payload: str = Body(..., media_type="text/plain")) -> dict:
+    """Impor JSONL dengan validasi seluruh batch sebelum penyimpanan."""
+    if len(payload.encode("utf-8")) > 1_000_000:
+        raise HTTPException(status_code=413, detail="Berkas terlalu besar; batas 1 MB.")
+    lines = [line.strip() for line in payload.splitlines() if line.strip()]
+    if not lines:
+        raise HTTPException(status_code=400, detail="Berkas kosong.")
+    if len(lines) > 500:
+        raise HTTPException(status_code=413, detail="Maksimal 500 baris per impor.")
+    validated: list[EventIn] = []
+    for line_number, line in enumerate(lines, start=1):
+        try:
+            raw = json.loads(line)
+            if not isinstance(raw, dict):
+                raise ValueError("Setiap baris harus berupa objek JSON.")
+            raw["is_simulated"] = bool(raw.get("is_simulated", False))
+            validated.append(EventIn.model_validate(raw))
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=f"Baris {line_number} tidak valid: {str(exc)[:180]}") from exc
+    imported = [record_event(item) for item in validated]
+    database.insert_audit(now_iso(), "log.diimpor", "impor-jsonl", len(imported), f"{len(imported)} baris tervalidasi")
+    return {
+        "berhasil": len(imported),
+        "gagal": 0,
+        "catatan": "Setiap baris divalidasi sebelum disimpan. Periksa asal-usul dan izin log sebelum impor.",
+        "kejadian": imported,
     }
 
 
