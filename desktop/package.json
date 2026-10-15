@@ -18,7 +18,11 @@
     "appId": "id.m4zk1pl4y.siberwaspada",
     "productName": "SIBERWASPADA AI",
     "directories": { "output": "release" },
-    "files": ["main.cjs", "package.json", "web/**/*", "resources/backend/**/*"],
+    "files": ["main.cjs", "package.json"],
+    "extraResources": [
+      { "from": "resources/backend", "to": "backend", "filter": ["**/*"] },
+      { "from": "web", "to": "web", "filter": ["**/*"] }
+    ],
     "asar": true,
     "extraMetadata": { "main": "main.cjs" },
     "win": { "target": ["nsis"], "artifactName": "SIBERWASPADA-AI-${version}-Setup.${ext}" },
