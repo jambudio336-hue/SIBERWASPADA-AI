@@ -71,3 +71,20 @@ def test_incident_csv_export():
     assert response.status_code == 200
     assert "text/csv" in response.headers["content-type"]
     assert "AUTH-001" in response.text
+
+
+
+def test_jsonl_import_is_validated_and_audited():
+    payload = '{"source_ip":"192.0.2.30","event_type":"login_failed","severity":"medium","message":"Impor uji","details":"log uji","is_simulated":true}\n'
+    response = client.post("/api/import/jsonl", content=payload, headers={"Content-Type": "text/plain"})
+    assert response.status_code == 200
+    assert response.json()["berhasil"] == 1
+    assert client.get("/api/audit").json()
+    assert client.get("/api/trends?days=7").status_code == 200
+
+
+def test_jsonl_import_rejects_invalid_batch_without_partial_write():
+    payload = '{"source_ip":"192.0.2.31","event_type":"normal_request","severity":"info","message":"valid"}\n{"broken":'
+    response = client.post("/api/import/jsonl", content=payload, headers={"Content-Type": "text/plain"})
+    assert response.status_code == 422
+    assert client.get("/api/events").json() == []
