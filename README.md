@@ -23,6 +23,52 @@ Platform edukasi dan pemantauan keamanan siber dengan mesin deteksi berbasis atu
 - `backend/`: Python + FastAPI + SQLite.
 - `backend/data/`: database runtime (tidak dikomit).
 - `.github/workflows/ci.yml`: tes backend dan build frontend.
+- `.github/workflows/desktop-build.yml`: paket desktop Windows/macOS/Linux.
+- `scripts/`: skrip instalasi dan peluncuran lintas platform.
+- `frontend/public/`: manifest PWA, ikon, dan cache kerangka offline.
+
+## Instalasi lintas platform
+
+### Termux (Android)
+Klon repo ke direktori home Termux (hindari /sdcard agar izin berkas dan symlink tidak bermasalah):
+```bash
+pkg update -y && pkg install -y git
+git clone https://github.com/jambudio336-hue/SIBERWASPADA-AI.git
+cd SIBERWASPADA-AI
+bash scripts/setup-termux.sh
+bash scripts/run.sh
+```
+Buka `http://127.0.0.1:5173` di browser Android. Termux harus tetap berjalan agar layanan API aktif.
+
+### Kali Linux / Ubuntu / Debian
+```bash
+git clone https://github.com/jambudio336-hue/SIBERWASPADA-AI.git
+cd SIBERWASPADA-AI
+bash scripts/setup-linux.sh
+```
+Setelah dependensi terpasang, jalankan `bash scripts/run.sh` untuk memulai aplikasi.
+
+### macOS
+Pasang Python 3.11+ dan Node.js 20+ (misalnya melalui Homebrew), lalu jalankan:
+```bash
+git clone https://github.com/jambudio336-hue/SIBERWASPADA-AI.git
+cd SIBERWASPADA-AI
+bash scripts/run.sh
+```
+
+### Windows 10/11 (PowerShell)
+Pasang Python 3.11+ dan Node.js 20+, lalu jalankan dari folder repo:
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\setup-windows.ps1
+.\scripts\run.ps1
+```
+
+### Installer desktop siap pakai
+Alur GitHub Actions membangun installer Windows `.exe`, macOS `.dmg`, serta Linux `.AppImage` dan `.deb`. Paket desktop dirancang menyertakan frontend dan API lokal dengan basis data di folder data pengguna. Buka tab **Actions** untuk melihat status build dan mengunduh artefak; setelah rilis dengan tag `v*`, berkas juga dipasang ke GitHub Releases. Installer baru tersedia setelah alur build berhasil dijalankan.
+
+### Instal sebagai aplikasi web (PWA)
+Buka frontend melalui `localhost` atau situs HTTPS pada browser yang mendukung PWA, lalu pilih **Instal aplikasi** atau **Tambahkan ke layar utama**. PWA menyimpan kerangka antarmuka untuk akses offline; data dinamis tetap memerlukan layanan backend yang berjalan.
 
 ## Jalankan lokal
 Persyaratan: Python 3.11+ dan Node.js 20+.
@@ -73,9 +119,6 @@ Data SQLite disimpan dalam named volume Docker `siberwaspada_data` sehingga teta
 - `GET /api/events?limit=100&severity=high`
 - `GET /api/alerts`
 - `GET /api/rules` — katalog aturan deteksi aktif.
-- `GET /api/trends?days=7` — tren harian kejadian (1–30 hari).
-- `GET /api/audit?limit=100` — jejak audit terbaru.
-- `POST /api/import/jsonl` — impor JSON Lines melalui badan teks.
 - `GET /api/trends?days=7` — tren harian kejadian (1–30 hari).
 - `GET /api/audit?limit=100` — jejak audit terbaru.
 - `POST /api/import/jsonl` — impor JSON Lines melalui badan teks.
