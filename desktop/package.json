@@ -1,7 +1,12 @@
 {
   "name": "siberwaspada-ai-desktop",
   "version": "0.2.0",
-  "description": "SIBERWASPADA AI - Platform pertahanan keamanan siber",
+  "description": "Platform pertahanan keamanan siber SIBERWASPADA AI",
+  "homepage": "https://github.com/jambudio336-hue/SIBERWASPADA-AI",
+  "author": {
+    "name": "m4zk1pl4y",
+    "email": "noreply@github.com"
+  },
   "private": true,
   "main": "main.cjs",
   "scripts": {
@@ -28,6 +33,13 @@
     "win": { "target": ["nsis"], "artifactName": "SIBERWASPADA-AI-${version}-Setup.${ext}" },
     "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true },
     "mac": { "target": ["dmg"], "artifactName": "SIBERWASPADA-AI-${version}-macOS.${ext}" },
-    "linux": { "target": ["AppImage", "deb"], "category": "Utility", "artifactName": "SIBERWASPADA-AI-${version}-Linux.${ext}" }
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Utility",
+      "maintainer": "m4zk1pl4y <noreply@github.com>",
+      "synopsis": "Dasbor pertahanan keamanan siber lokal",
+      "desktop": { "Name": "SIBERWASPADA AI" },
+      "artifactName": "SIBERWASPADA-AI-${version}-Linux.${ext}"
+    }
   }
 }
