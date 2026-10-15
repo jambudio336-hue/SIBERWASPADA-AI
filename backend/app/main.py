@@ -131,6 +131,54 @@ def run_simulator() -> dict:
     }
 
 
+@app.get("/api/rules")
+def get_detection_rules() -> list[dict[str, str]]:
+    """Document enabled deterministic rules for explainability."""
+    return [
+        {"rule_id": "AUTH-001", "name": "Kegagalan autentikasi", "event_types": "login_failed, auth_failure, failed_login", "severity": "medium", "enabled": "true"},
+        {"rule_id": "NET-002", "name": "Lonjakan permintaan", "event_types": "rate_spike, http_burst", "severity": "high", "enabled": "true"},
+        {"rule_id": "WEB-003", "name": "Pola path mencurigakan", "event_types": "suspicious_path, path_traversal_indicator", "severity": "high", "enabled": "true"},
+        {"rule_id": "OPS-004", "name": "Layanan gagal health check", "event_types": "service_down, health_check_failed", "severity": "critical", "enabled": "true"},
+    ]
+
+@app.get("/api/reports/summary")
+def report_summary() -> dict:
+    """Return a transparent summary report from stored events and incidents."""
+    metrics = database.metrics()
+    incidents = database.list_incidents()
+    statuses: dict[str, int] = {}
+    severities: dict[str, int] = {}
+    for item in incidents:
+        statuses[item["status"]] = statuses.get(item["status"], 0) + 1
+        severities[item["severity"]] = severities.get(item["severity"], 0) + 1
+    resolved = statuses.get("resolved", 0)
+    return {
+        "generated_at": now_iso(),
+        "data_mode": metrics["data_mode"],
+        "notice": "Ringkasan berdasarkan data lokal; event simulasi bukan bukti insiden nyata.",
+        "metrics": metrics,
+        "incident_statuses": statuses,
+        "incident_severities": severities,
+        "resolved_ratio_percent": round(resolved * 100 / len(incidents), 1) if incidents else 0,
+        "recommended_next_steps": [
+            "Tinjau insiden kritis dan tinggi yang masih terbuka.",
+            "Korelasikan event dengan sumber log resmi sebelum menyimpulkan adanya serangan.",
+            "Catat keputusan operator dan validasi false positive.",
+        ],
+    }
+
+@app.get("/api/export/incidents.csv")
+def export_incidents() -> StreamingResponse:
+    """Export recent incidents as a CSV report."""
+    rows = database.list_incidents()
+    buffer = io.StringIO()
+    fields = ["id", "event_id", "created_at", "rule_id", "title", "severity", "status", "source_ip", "event_type", "description", "recommendation", "is_simulated"]
+    writer = csv.DictWriter(buffer, fieldnames=fields, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(rows)
+    buffer.seek(0)
+    return StreamingResponse(iter([buffer.getvalue()]), media_type="text/csv; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="siberwaspada-incidents.csv"'})
+
 @app.get("/api/export/events.csv")
 def export_events() -> StreamingResponse:
     rows = database.list_events(500)
