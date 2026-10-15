@@ -49,7 +49,6 @@ def test_simulator_labels_generated_events():
     assert all(event["is_simulated"] for event in response.json()["events"])
 
 
-
 def test_rules_catalog_and_summary_report():
     rules = client.get("/api/rules")
     report = client.get("/api/reports/summary")
@@ -74,7 +73,6 @@ def test_incident_csv_export():
     assert "AUTH-001" in response.text
 
 
-
 def test_jsonl_import_is_validated_and_audited():
     payload = '{"source_ip":"192.0.2.30","event_type":"login_failed","severity":"medium","message":"Impor uji","details":"log uji","is_simulated":true}\n'
     response = client.post("/api/import/jsonl", content=payload, headers={"Content-Type": "text/plain"})
@@ -89,3 +87,20 @@ def test_jsonl_import_rejects_invalid_batch_without_partial_write():
     response = client.post("/api/import/jsonl", content=payload, headers={"Content-Type": "text/plain"})
     assert response.status_code == 422
     assert client.get("/api/events").json() == []
+
+
+def test_csv_export_escapes_spreadsheet_formulas():
+    response = client.post("/api/events", json={
+        "source_ip": "192.0.2.55",
+        "event_type": "normal_request",
+        "severity": "info",
+        "message": "=HYPERLINK(\"https://example.com\",\"click\")",
+        "details": "  +1+1",
+        "is_simulated": True,
+    })
+    assert response.status_code == 201
+
+    exported = client.get("/api/export/events.csv")
+    assert exported.status_code == 200
+    assert "'=HYPERLINK(" in exported.text
+    assert "'  +1+1" in exported.text
