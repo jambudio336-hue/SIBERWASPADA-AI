@@ -46,3 +46,28 @@ def test_simulator_labels_generated_events():
     assert response.json()["mode"] == "SIMULASI"
     assert response.json()["created"] == 4
     assert all(event["is_simulated"] for event in response.json()["events"])
+
+
+
+def test_rules_catalog_and_summary_report():
+    rules = client.get("/api/rules")
+    report = client.get("/api/reports/summary")
+    assert rules.status_code == 200
+    assert len(rules.json()) == 4
+    assert report.status_code == 200
+    assert "recommended_next_steps" in report.json()
+    assert "data_mode" in report.json()
+
+
+def test_incident_csv_export():
+    client.post("/api/events", json={
+        "source_ip": "192.0.2.11",
+        "event_type": "login_failed",
+        "severity": "medium",
+        "message": "CSV export test",
+        "is_simulated": True
+    })
+    response = client.get("/api/export/incidents.csv")
+    assert response.status_code == 200
+    assert "text/csv" in response.headers["content-type"]
+    assert "AUTH-001" in response.text
