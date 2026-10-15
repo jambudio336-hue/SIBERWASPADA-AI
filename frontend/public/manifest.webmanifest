@@ -1,0 +1,14 @@
+{
+  "name": "SIBERWASPADA AI - Pertahanan Siber",
+  "short_name": "SIBERWASPADA",
+  "description": "Dasbor pemantauan dan edukasi keamanan siber defensif.",
+  "lang": "id-ID",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
