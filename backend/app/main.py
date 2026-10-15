@@ -168,7 +168,10 @@ def import_jsonl(payload: str = Body(..., media_type="text/plain")) -> dict:
             raw = json.loads(line)
             if not isinstance(raw, dict):
                 raise ValueError("Setiap baris harus berupa objek JSON.")
-            raw["is_simulated"] = bool(raw.get("is_simulated", False))
+            simulated = raw.get("is_simulated", False)
+            if not isinstance(simulated, bool):
+                raise ValueError("is_simulated harus bernilai true atau false.")
+            raw["is_simulated"] = simulated
             validated.append(EventIn.model_validate(raw))
         except Exception as exc:
             raise HTTPException(status_code=422, detail=f"Baris {line_number} tidak valid: {str(exc)[:180]}") from exc
